@@ -45,7 +45,12 @@ const isStandalone = () => {
   if (process.env.NODE_ENV === 'development') {
     return true;
   }
-  return (window.matchMedia('(display-mode: standalone)').matches);
+  
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator.standalone === true) ||
+    document.referrer.includes('android-app://')
+  );
 }
 
 function App() {
