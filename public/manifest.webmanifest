@@ -1,0 +1,33 @@
+{
+    "theme_color": "#000000",
+    "background_color": "#000000",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": ".",
+    "name": "Spacer",
+    "description": "Where do you want to go tomorrow?",
+    "short_name": "Spacer",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/spacer-logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/spacer-logo.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "/spacer-logo.png",
+            "sizes": "384x384",
+            "type": "image/png"
+        },
+        {
+            "src": "/spacer-logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
