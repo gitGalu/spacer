@@ -24,6 +24,7 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import ConfettiExplosion from 'react-confetti-explosion';
 import db from './Db';
 import packageJson from '../package.json';
+import exifr from 'exifr';
 
 const MAX_DISTANCE = 50;
 const ENERGY_VALUES = {
@@ -68,6 +69,7 @@ function App() {
 
   const [permission, setPermission] = React.useState(null);
   const importEl = React.useRef(null);
+  const photoGuessEl = React.useRef(null);
   const [current, setCurrent] = React.useState(isStandalone() ? 1 : 0);
   const [startingAreaLoading, setStartingAreaLoading] = React.useState(false);
   const [scenario, setScenario] = React.useState(null);
@@ -250,9 +252,15 @@ function App() {
     return degrees * (Math.PI / 180);
   }
 
-  const userGuess = (cheat) => {
+  const userGuess = (cheat, guessLocation) => {
     if (process.env.REACT_APP_DEV_MODE === 'true') {
       console.log('userGuess called - currentImage:', currentImage, 'buttonsEnabled:', buttonsEnabled);
+    }
+    // Guess from an uploaded photo's GPS metadata, or fall back to the live location.
+    const fromLocation = guessLocation || userLocation;
+    if (!cheat && !fromLocation) {
+      setButtonsEnabled(true);
+      return;
     }
     setButtonsEnabled(false);
     
@@ -288,7 +296,7 @@ function App() {
       setButtonsEnabled(true);
       return;
     }
-    const distance = havesine(userLocation[0], userLocation[1], target.lat, target.lon);
+    const distance = havesine(fromLocation[0], fromLocation[1], target.lat, target.lon);
     setTutorialState(tutorialState + 2);
     if (cheat || distance < MAX_DISTANCE) {
       setExplosionActive(true);
@@ -333,6 +341,34 @@ function App() {
     }
     evaluateResult();
     setTimeout(() => { setDrawerOpen(false); setButtonsEnabled(true); }, 1500);
+  }
+
+  const handlePhotoGuess = async (event) => {
+    const file = event.target.files[0];
+    // Reset the input so selecting the same file again still fires onChange.
+    event.target.value = '';
+    if (!file) {
+      return;
+    }
+    setButtonsEnabled(false);
+    try {
+      const gps = await exifr.gps(file);
+      if (process.env.REACT_APP_DEV_MODE === 'true') {
+        console.log('handlePhotoGuess gps:', gps);
+      }
+      if (!gps || typeof gps.latitude !== 'number' || typeof gps.longitude !== 'number') {
+        setMessage(t('photo_no_gps'));
+        setButtonsEnabled(true);
+        return;
+      }
+      userGuess(false, [gps.latitude, gps.longitude]);
+    } catch (error) {
+      if (process.env.REACT_APP_DEV_MODE === 'true') {
+        console.log('handlePhotoGuess error:', error);
+      }
+      setMessage(t('photo_read_error'));
+      setButtonsEnabled(true);
+    }
   }
 
   const evaluateResult = () => {
@@ -1134,6 +1170,10 @@ function App() {
             </div>
             <div style={{ marginBottom: '16px' }}>
               <Button className={'btn'} disabled={!buttonsEnabled || userLocation === null} onClick={() => { userGuess(false); }}>{t('photo_here')}</Button>
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <input ref={photoGuessEl} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoGuess} />
+              <Button className={'btn'} disabled={!buttonsEnabled} onClick={() => { photoGuessEl.current.click(); }}>{t('guess_by_photo')}</Button>
             </div>
             <div>
               <Button className={'btn'} disabled={!buttonsEnabled} onClick={() => { setDrawerOpen(false); }}>{t('close_menu')}</Button>
