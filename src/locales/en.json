@@ -41,6 +41,7 @@
     "progress": "Progress",
     "progress_1": "Wskazanie miejsca wykonania wszystkich zdjęć w każdej z dzielnic będzie widoczne jako 100% na pasku postępu.",
     "location_refresh": "Refresh my location",
+    "gps_weak_signal": "Weak GPS signal (accuracy approx. {{accuracy}} m). Wait a moment in an open area and refresh your location to avoid missed guesses.",
     "photo_here": "The photo was taken here!",
     "close_menu": "Back to photos",
     "instructions_1": "Swipe left or right to move between photos",

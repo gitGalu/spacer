@@ -24,6 +24,7 @@
     "progress": "Postęp",
     "progress_1": "Wskazanie miejsca wykonania wszystkich zdjęć w każdej z dzielnic będzie widoczne jako 100% na pasku postępu.",
     "location_refresh": "Odśwież lokalizację",
+    "gps_weak_signal": "Słaby sygnał GPS (dokładność ok. {{accuracy}} m). Odczekaj chwilę na otwartej przestrzeni i odśwież lokalizację, aby uniknąć nietrafień.",
     "photo_here": "To tutaj zrobiono zdjęcie!",
     "close_menu": "Powrót do zdjęć",
     "instructions_1": "Przesuń w lewo lub prawo, aby zmienić zdjęcie.",

@@ -1,15 +1,12 @@
-const CACHE_NAME = 'spacer-v1';
-const STATIC_CACHE = 'spacer-static-v1';
-const RUNTIME_CACHE = 'spacer-runtime-v1';
+const CACHE_NAME = 'spacer-v2';
+const STATIC_CACHE = 'spacer-static-v2';
+const RUNTIME_CACHE = 'spacer-runtime-v2';
 
 const STATIC_ASSETS = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.webmanifest',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
   '/favicon.ico',
+  '/spacer-logo.png',
   '/scenarios/gdy1.json'
 ];
 
@@ -18,7 +15,13 @@ const LEAFLET_TILE_PATTERN = /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/;
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then((cache) => cache.addAll(STATIC_ASSETS))
+      .then((cache) => Promise.all(
+        STATIC_ASSETS.map((asset) =>
+          cache.add(asset).catch((error) => {
+            console.warn('SW: failed to cache', asset, error);
+          })
+        )
+      ))
       .then(() => self.skipWaiting())
   );
 });
@@ -26,9 +29,10 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
+      const currentCaches = [CACHE_NAME, STATIC_CACHE, RUNTIME_CACHE];
       return Promise.all(
         cacheNames
-          .filter((cacheName) => !cacheName.includes('v1'))
+          .filter((cacheName) => !currentCaches.includes(cacheName))
           .map((cacheName) => caches.delete(cacheName))
       );
     }).then(() => self.clients.claim())

@@ -80,6 +80,7 @@ function App() {
   const [importedScenario, setImportedScenario] = React.useState(null);
   const [isImageVisible, setImageVisible] = React.useState(false);
   const [userLocation, setUserLocation] = React.useState(null);
+  const [locationAccuracy, setLocationAccuracy] = React.useState(null);
   const scenarioSelectRef = React.useRef(null);
   const flickingRef = React.useRef(null);
   const [shakeActive, setShakeActive] = React.useState(false);
@@ -173,7 +174,8 @@ function App() {
         },
         (error) => {
           setPermission(error.message);
-        }
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     } else {
       setPermission('unavailable');
@@ -211,12 +213,19 @@ function App() {
   const updateLocation = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const { latitude, longitude } = position.coords;
+        const { latitude, longitude, accuracy } = position.coords;
         setUserLocation([latitude, longitude]);
+        setLocationAccuracy(accuracy);
         if (mapRef.current != null) {
           mapRef.current.setView([latitude, longitude]);
         }
-      }
+      },
+      (error) => {
+        if (process.env.REACT_APP_DEV_MODE === 'true') {
+          console.log('updateLocation error:', error.message);
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
 
@@ -1113,6 +1122,11 @@ function App() {
                 getAreaName(userLocation)
               }
             </div>
+            {userLocation && locationAccuracy !== null && locationAccuracy > MAX_DISTANCE &&
+              <div style={{ marginTop: '8px', marginBottom: '8px', padding: '10px', background: 'rgba(255,165,0,0.15)', borderRadius: '8px', color: 'orange', textAlign: 'center', fontSize: '13px' }}>
+                {t('gps_weak_signal', { accuracy: Math.round(locationAccuracy) })}
+              </div>
+            }
           </div>
           <div className="drawer-buttons-row" style={{ flexShrink: 0, padding: '16px 0' }}>
             <div style={{ marginBottom: '16px' }}>

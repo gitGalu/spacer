@@ -1,5 +1,7 @@
 # Spacer
 
+https://spacer-go.pages.dev  
+
 **Spacer** to mobilna, przeglądarkowa gra terenowa, w której odgadujemy miejsca wykonania prezentowanych fotografii. Aby wskazać lokalizację, musimy faktycznie udać się w dane miejsce i sprawdzić rezultat w aplikacji. Ułatwieniem dla gracza jest informacja o tym, z jakiego obszaru (np. dzielnicy czy fragmentu miasta) pochodzi zdjęcie.  
 
 Do gry **Spacer** dołączone są przykładowe scenariusze przygotowane dla Gdyni, ale dostępne jest również dedykowane narzędzie do tworzenia własnych scenariuszy: [Spacer-konstruktor](https://spacer-konstruktor.pages.dev).  
