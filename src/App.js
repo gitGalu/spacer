@@ -289,7 +289,7 @@ function App() {
     return degrees * (Math.PI / 180);
   }
 
-  const userGuess = (cheat) => {
+  const userGuess = (cheat, guessLocation) => {
     if (process.env.REACT_APP_DEV_MODE === 'true') {
       console.log('userGuess called - currentImage:', currentImage, 'buttonsEnabled:', buttonsEnabled);
     }
