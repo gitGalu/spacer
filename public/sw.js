@@ -1,6 +1,6 @@
-const CACHE_NAME = 'spacer-v2';
-const STATIC_CACHE = 'spacer-static-v2';
-const RUNTIME_CACHE = 'spacer-runtime-v2';
+const CACHE_NAME = 'spacer-v3';
+const STATIC_CACHE = 'spacer-static-v3';
+const RUNTIME_CACHE = 'spacer-runtime-v3';
 
 const STATIC_ASSETS = [
   '/',
@@ -69,6 +69,27 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.method === 'GET') {
+    // Navigations (the HTML shell) must be network-first, otherwise an
+    // installed PWA keeps serving a stale index.html that points at old
+    // hashed bundles - so app updates never reach the device. Hashed assets
+    // stay cache-first below: a new build changes their URL, so it is safe.
+    if (request.mode === 'navigate' || request.destination === 'document') {
+      event.respondWith(
+        fetch(request).then((response) => {
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        }).catch(() => {
+          return caches.match(request).then((cached) => cached || caches.match('/'));
+        })
+      );
+      return;
+    }
+
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
