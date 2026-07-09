@@ -1,5 +1,13 @@
+html,
 body {
   margin: 0;
+  /* Disable pinch/double-tap zoom of the overall UI on mobile. Leaflet sets
+     its own touch-action on .leaflet-container, so the map keeps its native
+     pinch-zoom; this rule only governs the surrounding interface. */
+  touch-action: pan-x pan-y;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
