@@ -194,6 +194,43 @@ function App() {
     };
   }, []);
 
+  // iOS Safari ignores user-scalable=no, so block its pinch-zoom (gesture*
+  // events) and double-tap zoom manually. The map keeps its own zoom because
+  // it lives inside .leaflet-container, which we exclude.
+  React.useEffect(() => {
+    const inMap = (target) => target && target.closest && target.closest('.leaflet-container');
+
+    const blockGesture = (e) => {
+      if (inMap(e.target)) {
+        return;
+      }
+      e.preventDefault();
+    };
+
+    let lastTouchEnd = 0;
+    const blockDoubleTap = (e) => {
+      if (inMap(e.target)) {
+        return;
+      }
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    };
+
+    document.addEventListener('gesturestart', blockGesture, { passive: false });
+    document.addEventListener('gesturechange', blockGesture, { passive: false });
+    document.addEventListener('gestureend', blockGesture, { passive: false });
+    document.addEventListener('touchend', blockDoubleTap, { passive: false });
+    return () => {
+      document.removeEventListener('gesturestart', blockGesture);
+      document.removeEventListener('gesturechange', blockGesture);
+      document.removeEventListener('gestureend', blockGesture);
+      document.removeEventListener('touchend', blockDoubleTap);
+    };
+  }, []);
+
   function MapEvents() {
     const map = useMapEvents({
       click: (e) => {
@@ -855,7 +892,7 @@ function App() {
       <div style={{ 'paddingRight': '16px' }}>
         <div className={`background ${isImageVisible ? 'hide' : ''}`}></div>
         <div className={`background-image ${isImageVisible ? 'show' : ''}`}></div>
-        <h3 className="stepper-heading">{t('app_name')}<sup style={{ fontSize: "50%" }}>v{packageJson.version}</sup></h3>
+        <h3 className="stepper-heading">{t('app_name')}<sup style={{ fontSize: "50%" }}>v{packageJson.version}{process.env.REACT_APP_BUILD_TIME ? ` (${process.env.REACT_APP_BUILD_TIME})` : ''}</sup></h3>
         <ProgressSteps current={current}
           overrides={{
             Content: {
@@ -1046,7 +1083,7 @@ function App() {
 
   const renderPermission = () => {
     return <>
-      <h3 className="stepper-heading">{t('app_name')}<sup style={{ fontSize: "50%" }}>v{packageJson.version}</sup></h3>
+      <h3 className="stepper-heading">{t('app_name')}<sup style={{ fontSize: "50%" }}>v{packageJson.version}{process.env.REACT_APP_BUILD_TIME ? ` (${process.env.REACT_APP_BUILD_TIME})` : ''}</sup></h3>
       <p>{t('location_permission_heading')}</p>
       <p>{t('location_permission_message_1')}</p>
     </>
