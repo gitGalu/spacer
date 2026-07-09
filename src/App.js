@@ -26,6 +26,8 @@ import db from './Db';
 import packageJson from '../package.json';
 
 const MAX_DISTANCE = 50;
+const GPS_MARGIN_CAP = 25;      // most GPS error we forgive on top of MAX_DISTANCE
+const NEAR_MISS_DISTANCE = 100; // within this, a weak-GPS miss is not punished
 const ENERGY_VALUES = {
   survival: { wrong: -5, correct: +5 },
   revival: { wrong: -10, correct: +2 }
@@ -327,7 +329,14 @@ function App() {
     }
     const distance = havesine(userLocation[0], userLocation[1], target.lat, target.lon);
     setTutorialState(tutorialState + 2);
-    if (cheat || distance < MAX_DISTANCE) {
+    // Give the player the benefit of the GPS measurement error, capped so a very
+    // coarse fix can't hand out free hits (max 25 m margin -> effective max 75 m).
+    const accuracyMargin = guessLocation ? 0 : Math.min(locationAccuracy || 0, GPS_MARGIN_CAP);
+    const isHit = cheat || distance < MAX_DISTANCE || (distance - accuracyMargin) < MAX_DISTANCE;
+    // Near miss with an unreliable fix: likely the GPS's fault, so don't punish.
+    const isUnfairMiss = !isHit && !guessLocation && distance < NEAR_MISS_DISTANCE
+      && (locationAccuracy || 0) > MAX_DISTANCE;
+    if (isHit) {
       setExplosionActive(true);
       setTimeout(() => { setExplosionActive(false) }, 2500);
       setImageData(currentImage, true, true);
@@ -361,6 +370,11 @@ function App() {
       
       setMessage(t('good_answer'));
       // setMessage(distance);
+    } else if (isUnfairMiss) {
+      // Don't shake, don't lose energy, keep the menu open for another try.
+      setMessage(t('near_miss_weak_gps', { accuracy: Math.round(locationAccuracy) }));
+      setButtonsEnabled(true);
+      return;
     } else {
       setShakeActive(true);
       setTimeout(function () { setShakeActive(false) }, 1500);

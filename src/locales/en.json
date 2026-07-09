@@ -48,6 +48,7 @@
     "instructions_2": "Tap the photo to open menu",
     "select_placeholder": "Select...",
     "wrong_answer": "Wrong answer!",
+    "near_miss_weak_gps": "So close! But the GPS signal is weak (±{{accuracy}} m). Refresh your location and try again — no energy lost.",
     "good_answer": "Good answer!",
     "location_permission_heading": "...",
     "location_permission_message_1": "...",

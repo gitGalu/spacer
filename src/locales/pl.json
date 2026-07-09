@@ -31,6 +31,7 @@
     "instructions_2": "Stuknij zdjęcie, aby otworzyć menu",
     "select_placeholder": "Wybierz...",
     "wrong_answer": "Zła odpowiedź!",
+    "near_miss_weak_gps": "Blisko! Sygnał GPS jest jednak słaby (±{{accuracy}} m). Odśwież lokalizację i spróbuj ponownie — bez utraty energii.",
     "good_answer": "Prawidłowa odpowiedź!",
     "location_permission_heading": "...",
     "location_permission_message_1": "...",
