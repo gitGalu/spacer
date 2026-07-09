@@ -1193,6 +1193,9 @@ function App() {
                 </div>
               </div>
             )}
+            <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+              v{packageJson.version}{process.env.REACT_APP_BUILD_TIME ? ` · ${process.env.REACT_APP_BUILD_TIME}` : ''}
+            </div>
           </div>
         </div>
       </Drawer>
