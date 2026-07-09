@@ -141,6 +141,75 @@ function App() {
     return JSON.parse(localStorage.getItem('img_' + key));
   }
 
+  const GUESS_LOG_KEY = 'guessLog';
+
+  const getGuessLog = () => {
+    try {
+      return JSON.parse(localStorage.getItem(GUESS_LOG_KEY)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Record one guess attempt (live GPS) for later diagnostics/export.
+  const logGuessAttempt = (entry) => {
+    const log = getGuessLog();
+    log.push(entry);
+    localStorage.setItem(GUESS_LOG_KEY, JSON.stringify(log));
+  }
+
+  const buildGuessCsv = (log) => {
+    // Metadata as leading comment lines so a single CSV keeps full context.
+    const metaLines = [
+      `# scenario: ${scenario ? scenario.scenario_title : 'spacer'}`,
+      `# scenario_version: ${scenario ? scenario.scenario_version : ''}`,
+      `# app_version: ${packageJson.version}`,
+      `# exported_at: ${new Date().toISOString()}`,
+      `# max_distance_m: ${MAX_DISTANCE}`,
+      `# attempts: ${log.length}`
+    ];
+    const header = [
+      'timestamp', 'image_id', 'area', 'result',
+      'distance_m', 'accuracy_m', 'user_lat', 'user_lon',
+      'target_lat', 'target_lon'
+    ];
+    const rows = log.map((e) => [
+      e.timestamp, e.imageId, e.area, e.result,
+      e.distance, e.accuracy, e.userLat, e.userLon,
+      e.targetLat, e.targetLon
+    ].join(','));
+    return [...metaLines, header.join(','), ...rows].join('\n');
+  }
+
+  const exportGuessLog = async () => {
+    const log = getGuessLog();
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const csv = buildGuessCsv(log);
+    const file = new File([csv], `spacer-guesses-${stamp}.csv`, { type: 'text/csv' });
+    const files = [file];
+
+    // Prefer the native share sheet on mobile (mail, AirDrop, etc.).
+    if (navigator.canShare && navigator.canShare({ files })) {
+      try {
+        await navigator.share({ files, title: 'Spacer - log prób' });
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return; // user cancelled
+        // otherwise fall through to download
+      }
+    }
+
+    // Fallback: download the file.
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   const plugins = [new Fade(), new Perspective({ rotate: 0.2, scale: 0.2 })];
 
   const reset = () => {
@@ -336,6 +405,23 @@ function App() {
     // Near miss with an unreliable fix: likely the GPS's fault, so don't punish.
     const isUnfairMiss = !isHit && !guessLocation && distance < NEAR_MISS_DISTANCE
       && (locationAccuracy || 0) > MAX_DISTANCE;
+
+    // Log the attempt (live GPS only) for diagnostics/export.
+    if (!cheat && !guessLocation) {
+      logGuessAttempt({
+        timestamp: new Date().toISOString(),
+        imageId: target.id,
+        area: target.area,
+        result: isHit ? 'hit' : (isUnfairMiss ? 'near_miss_weak_gps' : 'miss'),
+        distance: Math.round(distance),
+        accuracy: locationAccuracy != null ? Math.round(locationAccuracy) : null,
+        userLat: userLocation[0],
+        userLon: userLocation[1],
+        targetLat: target.lat,
+        targetLon: target.lon
+      });
+    }
+
     if (isHit) {
       setExplosionActive(true);
       setTimeout(() => { setExplosionActive(false) }, 2500);
@@ -1189,6 +1275,16 @@ function App() {
             <div>
               <Button className={'btn'} disabled={!buttonsEnabled} onClick={() => { setDrawerOpen(false); }}>{t('close_menu')}</Button>
             </div>
+            {getGuessLog().length > 0 && (
+              <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                <button
+                  onClick={exportGuessLog}
+                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '12px', textDecoration: 'underline', cursor: 'pointer' }}
+                >
+                  {t('export_guess_log', { count: getGuessLog().length })}
+                </button>
+              </div>
+            )}
             {/* Dev mode buttons */}
             {process.env.REACT_APP_DEV_MODE === 'true' && (
               <div style={{ marginTop: '20px', padding: '10px', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>

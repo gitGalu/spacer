@@ -27,6 +27,7 @@
     "gps_weak_signal": "Słaby sygnał GPS (dokładność ok. {{accuracy}} m). Odczekaj chwilę na otwartej przestrzeni i odśwież lokalizację, aby uniknąć nietrafień.",
     "photo_here": "To tutaj zrobiono zdjęcie!",
     "close_menu": "Powrót do zdjęć",
+    "export_guess_log": "Eksportuj log prób ({{count}})",
     "instructions_1": "Przesuń w lewo lub prawo, aby zmienić zdjęcie.",
     "instructions_2": "Stuknij zdjęcie, aby otworzyć menu",
     "select_placeholder": "Wybierz...",

@@ -44,6 +44,7 @@
     "gps_weak_signal": "Weak GPS signal (accuracy approx. {{accuracy}} m). Wait a moment in an open area and refresh your location to avoid missed guesses.",
     "photo_here": "The photo was taken here!",
     "close_menu": "Back to photos",
+    "export_guess_log": "Export guess log ({{count}})",
     "instructions_1": "Swipe left or right to move between photos",
     "instructions_2": "Tap the photo to open menu",
     "select_placeholder": "Select...",
